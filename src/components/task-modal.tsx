@@ -16,6 +16,7 @@ interface TaskModalProps {
   setSelectedTaskId: (id: string | null) => void
   updateTaskStatus: (taskId: string, newStatus: TaskStatus) => Promise<void>
   addComment: (taskId: string, content: string, author: string) => Promise<void>
+  updatingTask: boolean
 }
 
 export function TaskModalComponent({
@@ -23,7 +24,8 @@ export function TaskModalComponent({
   selectedTaskId,
   setSelectedTaskId,
   updateTaskStatus,
-  addComment
+  addComment,
+  updatingTask
 }: TaskModalProps) {
   const [newComment, setNewComment] = useState('')
   const [showConfirmation, setShowConfirmation] = useState(false)
@@ -46,7 +48,12 @@ export function TaskModalComponent({
         handleStatusChange(newStatus)
       }
 
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      if (e.key === "Enter") {
+        e.preventDefault()
+        confirmStatusChange()
+      }
+
+      if (!showConfirmation && ['ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault()
         const currentTasks = tasks.filter((t: Task) => t.status === task.status)
         const currentIndex = currentTasks.findIndex((t: Task) => t.id === selectedTaskId)
@@ -149,6 +156,9 @@ export function TaskModalComponent({
                 <Button type="submit">Add Comment</Button>
               </form>
             </div>
+            <div className="mt-4 text-muted-foreground text-xs">
+              Use Arrow Left and Arrow Right keys to navigate between tasks.
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -165,7 +175,7 @@ export function TaskModalComponent({
             <Button variant="outline" onClick={() => setShowConfirmation(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmStatusChange}>Confirm</Button>
+            <Button onClick={confirmStatusChange} disabled={updatingTask}>{updatingTask ? "Updating..." : "Confirm"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

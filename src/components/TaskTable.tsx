@@ -43,8 +43,8 @@ export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSel
       scrollToSelectedRow(Math.max(0, focusedIndex - 1));
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setFocusedIndex(prev => Math.min(currentTasks.length - 1, prev + 1));
-      scrollToSelectedRow(Math.min(currentTasks.length - 1, focusedIndex + 1));
+      setFocusedIndex(prev => Math.min(visibleTasks - 1, prev + 1));
+      scrollToSelectedRow(Math.min(visibleTasks - 1, focusedIndex + 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const selectedTask = currentTasks[focusedIndex];
@@ -52,7 +52,7 @@ export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSel
         setSelectedTaskId(selectedTask.id);
       }
     }
-  }, [currentTasks, focusedIndex, setSelectedTaskId, selectedTaskId]);
+  }, [currentTasks, focusedIndex, setSelectedTaskId, selectedTaskId, visibleTasks]);
 
   // Scroll selected row into view
   const scrollToSelectedRow = useCallback((index: number) => {

@@ -10,12 +10,15 @@ const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<TaskStatus>('open');
   const [loading, setLoading] = useState(false);
+  const [updatingTask, setUpdatingTask] = useState<boolean>(false);
 
   const updateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
+    setUpdatingTask(true);
     setTasks(tasks.map(t =>
       t.id === taskId ? { ...t, status: newStatus } : t
     ));
     await updateTaskStatusOnDb(taskId, newStatus);
+    setUpdatingTask(false);
   };
 
   const addComment = async (taskId: string, content: string, author: string) => {
@@ -69,6 +72,7 @@ const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task
               setSelectedTaskId={setSelectedTaskId}
               updateTaskStatus={updateTaskStatus}
               addComment={addComment}
+              updatingTask={updatingTask}
             />
           )}
         </div>
