@@ -134,7 +134,7 @@ export function TaskModalComponent({
             <div>
               <h3 className="mb-2 font-medium">Comments</h3>
               <div className="space-y-2">
-                {task.comments.map((comment: any) => (
+                {task && task?.comments && task?.comments.map((comment: any) => (
                   <div key={comment.id} className="bg-muted p-2 rounded-md">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">{comment.author}</span>

@@ -3,14 +3,18 @@ import React, { useEffect, useState } from 'react'
 import StatusTabs from './StatusTabs';
 import TaskTable from './TaskTable';
 import { Task, TaskStatus } from '@/types/task';
-import { addComment as addCommentOnDb, updateTaskStatus as updateTaskStatusOnDb } from '@/services/api';
+import { addComment as addCommentOnDb, updateTaskStatus as updateTaskStatusOnDb, addTask as addTaskOnDb } from '@/services/api';
 import { TaskModalComponent } from './task-modal';
+import { Button } from './ui/button';
+import { AddTaskDialog } from './AddTaskDialog';
+
 const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task[] }, getData: (status: TaskStatus) => Promise<{ tasks: Task[] }>, counts: { open: number, in_progress: number, closed: number } }) => {
   const [tasks, setTasks] = useState<Task[]>(initialData.tasks);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<TaskStatus>('open');
   const [loading, setLoading] = useState(false);
   const [updatingTask, setUpdatingTask] = useState<boolean>(false);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   const updateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
     setUpdatingTask(true);
@@ -49,12 +53,18 @@ const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task
     <div className="bg-gray-100 min-h-screen">
       <div className="mx-auto sm:px-6 lg:px-8 py-6 max-w-7xl">
         <div className="px-4 sm:px-0 py-6">
-          <StatusTabs
-            tasks={tasks}
-            currentStatus={currentStatus}
-            setCurrentStatus={setCurrentStatus}
-            counts={counts}
-          />
+          <div className="flex justify-between items-center">
+
+            <StatusTabs
+              tasks={tasks}
+              currentStatus={currentStatus}
+              setCurrentStatus={setCurrentStatus}
+              counts={counts}
+            />
+            <Button variant="outline" onClick={() => setIsAddTaskOpen(true)}>
+              Add new task
+            </Button>
+          </div>
           <div className="mt-4">
             {loading ? <div>Loading...</div> : (
               <TaskTable
@@ -75,6 +85,13 @@ const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task
               updatingTask={updatingTask}
             />
           )}
+          <AddTaskDialog
+            open={isAddTaskOpen}
+            onOpenChange={setIsAddTaskOpen}
+            onTaskAdded={(newTask) => {
+              setTasks(prev => [...prev, newTask]);
+            }}
+          />
         </div>
       </div>
     </div>

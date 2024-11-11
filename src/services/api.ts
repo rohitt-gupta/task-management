@@ -1,13 +1,19 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
-import { Task, TaskStatus, PageDetails, CommentCursor } from "../types/task";
+import {
+	Task,
+	TaskStatus,
+	PageDetails,
+	CommentCursor,
+	TaskPriority,
+} from "../types/task";
 import { revalidatePath } from "next/dist/server/web/spec-extension/revalidate";
 
 const prisma = new PrismaClient();
 
 export async function fetchAllTasks() {
-	const tasks = await prisma.task.findMany({
+	const tasks: Task[] = await prisma.task.findMany({
 		include: {
 			labels: true,
 			comments: true,
@@ -17,6 +23,17 @@ export async function fetchAllTasks() {
 	return {
 		tasks,
 	};
+}
+
+export async function addTask(data: NewTaskData) {
+	await prisma.task.create({
+		data: {
+			...data,
+			status: "open",
+			dueDate: new Date(),
+			description: data.description || "",
+		},
+	});
 }
 
 export async function fetchCounts() {
@@ -91,4 +108,11 @@ export async function addComment(
 	});
 
 	return comment;
+}
+
+interface NewTaskData {
+	name: string;
+	description?: string;
+	priority: TaskPriority;
+	assignee: string;
 }

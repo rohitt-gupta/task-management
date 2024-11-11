@@ -55,3 +55,11 @@ export interface CommentsResponse {
 		hasNextMessage: boolean;
 	};
 }
+
+export interface NewTaskData {
+	name: string;
+	description?: string;
+	priority: TaskPriority;
+	assignee: string;
+	dueDate?: Date;
+}

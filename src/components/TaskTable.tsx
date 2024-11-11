@@ -111,7 +111,7 @@ export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSel
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex space-x-1">
-                  {task.labels.map((label) => (
+                  {task && task?.labels && task?.labels.map((label) => (
                     <span
                       key={label.id}
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${label.color}-100 text-${label.color}-800`}
