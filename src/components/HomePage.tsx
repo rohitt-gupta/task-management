@@ -60,9 +60,9 @@ const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task
               setCurrentStatus={setCurrentStatus}
               counts={counts}
             />
-            <Button variant="outline" onClick={() => setIsAddTaskOpen(true)}>
+            {/* <Button variant="outline" onClick={() => setIsAddTaskOpen(true)}>
               Add new task
-            </Button>
+            </Button> */}
           </div>
           <div className="mt-4">
             {loading ? <div>Loading...</div> : (
