@@ -25,8 +25,13 @@ const priorityColors = {
 
 export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSelectedTaskId }: TaskTableProps) {
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [visibleTasks, setVisibleTasks] = useState(5);
   const tableRef = useRef<HTMLDivElement>(null);
   const currentTasks = tasks?.filter((task) => task.status === currentStatus) || [];
+
+  const loadMoreTasks = () => {
+    setVisibleTasks((prev) => prev + 5);
+  };
 
   // Keyboard navigation handler
   const handleKeyboardNavigation = useCallback((e: KeyboardEvent) => {
@@ -88,7 +93,7 @@ export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSel
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {currentTasks.map((task, index) => (
+          {currentTasks.slice(0, visibleTasks).map((task, index) => (
             <tr
               key={task.id}
               onClick={() => setSelectedTaskId(task.id)}
@@ -128,6 +133,13 @@ export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSel
           ))}
         </tbody>
       </table>
+      {visibleTasks < currentTasks.length && (
+        <div className="flex justify-center mt-4">
+          <button onClick={loadMoreTasks} className="bg-blue-500 px-4 py-2 rounded text-white">
+            Load More
+          </button>
+        </div>
+      )}
     </div>
   );
 }

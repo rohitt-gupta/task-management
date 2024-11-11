@@ -5,13 +5,11 @@ import { Task, TaskStatus } from "@/types/task";
 export default async function Home() {
 
   const counts = await fetchCounts();
-  console.log("counts", counts);
+  const { tasks } = await fetchAllTasks();
   const getData = async (status: TaskStatus) => {
     'use server';
-    const data = await fetchAllTasks();
-    console.log("data", status);
     return {
-      tasks: data.tasks.filter((task: Task) => task.status === status),
+      tasks: tasks.filter((task: Task) => task.status === status),
     };
   };
 
