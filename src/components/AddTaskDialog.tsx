@@ -23,13 +23,12 @@ export function AddTaskDialog({ open, onOpenChange, onTaskAdded }: AddTaskDialog
 
     setIsSubmitting(true);
     try {
-      const newTask = await addTask({
+      await addTask({
         name: title,
         description,
         priority,
         assignee: "John Doe",
       });
-      onTaskAdded(newTask);
       onOpenChange(false);
       setTitle("");
       setDescription("");
