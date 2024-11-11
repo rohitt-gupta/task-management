@@ -1,63 +1,94 @@
-import { mockTasks } from "@/data/tasks";
-import fs from "fs/promises";
-import path from "path";
-import {
-	Task,
-	TaskStatus,
-	PageDetails,
-	TaskComment,
-	CommentCursor,
-	TaskPriority,
-} from "../types/task";
+"use server";
 
-// Simulated API delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { PrismaClient } from "@prisma/client";
+import { Task, TaskStatus, PageDetails, CommentCursor } from "../types/task";
+import { revalidatePath } from "next/dist/server/web/spec-extension/revalidate";
 
-export async function fetchTasks(status: TaskStatus, pageDetails: PageDetails) {
-	const mockTasks1 = mockTasks.filter((task: Task) => task.status === status);
+const prisma = new PrismaClient();
+
+export async function fetchAllTasks() {
+	const tasks = await prisma.task.findMany({
+		include: {
+			labels: true,
+			comments: true,
+		},
+	});
 
 	return {
-		tasks: mockTasks1,
-		pageDetails: {
-			pageSize: pageDetails.pageSize,
-			hasNext: pageDetails.offset < 100, // Mock pagination
-		},
+		tasks,
+	};
+}
+
+export async function fetchCounts() {
+	const counts = await prisma.task.groupBy({
+		by: ["status"],
+		_count: { id: true },
+	});
+
+	return {
+		open:
+			counts.find((c: { status: string }) => c.status === "open")?._count.id ??
+			0,
+		in_progress:
+			counts.find((c: { status: string }) => c.status === "in_progress")?._count
+				.id ?? 0,
+		closed:
+			counts.find((c: { status: string }) => c.status === "closed")?._count
+				.id ?? 0,
 	};
 }
 
 export async function fetchComments(taskId: string, cursor: CommentCursor) {
+	const comments = await prisma.comment.findMany({
+		where: { taskId },
+		take: cursor.pageSize,
+		skip: cursor.lastCommentId ? 1 : 0,
+		cursor: cursor.lastCommentId ? { id: cursor.lastCommentId } : undefined,
+		orderBy: { createdAt: "desc" },
+	});
+
+	const nextComment = await prisma.comment.findFirst({
+		where: { taskId },
+		skip: cursor.pageSize,
+		orderBy: { createdAt: "desc" },
+	});
+
 	return {
-		comments: Array.from({ length: 5 }, (_, i) => ({
-			id: `${taskId}-comment-${i}`,
-			content: `This is comment ${i} for task ${taskId}`,
-			author: "John Doe",
-			createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-		})),
+		comments,
 		cursor: {
-			lastMessageId: `${taskId}-comment-4`,
+			lastMessageId: comments[comments.length - 1]?.id ?? null,
 			pageSize: cursor.pageSize,
-			hasNextMessage: false,
+			hasNextMessage: !!nextComment,
 		},
 	};
 }
 
 export async function updateTaskStatus(taskId: string, newStatus: TaskStatus) {
-	const filePath = path.join(process.cwd(), "src/data/tasks.ts");
-	const fileContent = await fs.readFile(filePath, "utf-8");
-	const updatedContent = fileContent.replace(
-		new RegExp(`(id:\\s*["']${taskId}["'].*?status:\\s*["'])\\w+(["'])`, "s"),
-		`$1${newStatus}$2`
-	);
+	await prisma.task.update({
+		where: { id: taskId },
+		data: {
+			status: newStatus,
+			updatedAt: new Date(),
+		},
+	});
 
-	await fs.writeFile(filePath, updatedContent, "utf-8");
+	revalidatePath(`/`);
+
 	return { success: true };
 }
 
-export async function addComment(taskId: string, content: string) {
-	return {
-		id: crypto.randomUUID(),
-		content,
-		author: "Current User",
-		createdAt: new Date(),
-	};
+export async function addComment(
+	taskId: string,
+	content: string,
+	author: string
+) {
+	const comment = await prisma.comment.create({
+		data: {
+			content,
+			author,
+			taskId,
+		},
+	});
+
+	return comment;
 }

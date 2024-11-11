@@ -1,13 +1,19 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
-import { ArrowUpCircle, Circle, CheckCircle2, ArrowUpDown } from 'lucide-react';
-import useTaskStore from '../store/taskStore';
-import { SortingOrder, SortingType } from '../types/task';
+import { ArrowUpCircle, Circle, CheckCircle2 } from 'lucide-react';
+import { Task, TaskStatus } from '../types/task';
+
+interface TaskTableProps {
+  tasks: Task[];
+  currentStatus: TaskStatus;
+  selectedTaskId: string | null;
+  setSelectedTaskId: (id: string | null) => void;
+}
 
 const statusIcons = {
   'open': Circle,
-  'in-progress': ArrowUpCircle,
+  'in_progress': ArrowUpCircle,
   'closed': CheckCircle2,
 };
 
@@ -17,33 +23,14 @@ const priorityColors = {
   high: 'bg-red-100 text-red-800',
 };
 
-export default function TaskTable() {
-  const {
-    tasks,
-    currentStatus,
-    selectedTaskId,
-    setSelectedTaskId,
-    loading,
-    loadMoreTasks,
-  } = useTaskStore();
-
-  const [sortingOrder, setSortingOrder] = useState<SortingOrder>('DESC');
-  const [sortingType, setSortingType] = useState<SortingType>('CREATION');
+export default function TaskTable({ tasks, currentStatus, selectedTaskId, setSelectedTaskId }: TaskTableProps) {
   const [focusedIndex, setFocusedIndex] = useState(0);
-
   const tableRef = useRef<HTMLDivElement>(null);
-  const currentTasks = Array.isArray(tasks) ? tasks?.filter((task) => task.status === currentStatus) : [];
-
-  const sortedTasks = [...currentTasks].sort((a, b) => {
-    if (sortingType === 'CREATION') {
-      return sortingOrder === 'ASC' ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-    return 0;
-  });
+  const currentTasks = tasks?.filter((task) => task.status === currentStatus) || [];
 
   // Keyboard navigation handler
   const handleKeyboardNavigation = useCallback((e: KeyboardEvent) => {
-    if (!sortedTasks.length) return;
+    if (!currentTasks.length || selectedTaskId) return;
 
     if (e.key === 'ArrowUp') {
       e.preventDefault();
@@ -51,16 +38,16 @@ export default function TaskTable() {
       scrollToSelectedRow(Math.max(0, focusedIndex - 1));
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setFocusedIndex(prev => Math.min(sortedTasks.length - 1, prev + 1));
-      scrollToSelectedRow(Math.min(sortedTasks.length - 1, focusedIndex + 1));
+      setFocusedIndex(prev => Math.min(currentTasks.length - 1, prev + 1));
+      scrollToSelectedRow(Math.min(currentTasks.length - 1, focusedIndex + 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const selectedTask = sortedTasks[focusedIndex];
+      const selectedTask = currentTasks[focusedIndex];
       if (selectedTask) {
         setSelectedTaskId(selectedTask.id);
       }
     }
-  }, [sortedTasks, focusedIndex, setSelectedTaskId]);
+  }, [currentTasks, focusedIndex, setSelectedTaskId, selectedTaskId]);
 
   // Scroll selected row into view
   const scrollToSelectedRow = useCallback((index: number) => {
@@ -79,11 +66,6 @@ export default function TaskTable() {
     return () => window.removeEventListener('keydown', handleKeyboardNavigation);
   }, [handleKeyboardNavigation]);
 
-  const toggleSorting = () => {
-    const newOrder: SortingOrder = sortingOrder === 'ASC' ? 'DESC' : 'ASC';
-    setSortingOrder(newOrder);
-  };
-
   const StatusIcon = statusIcons[currentStatus];
 
   return (
@@ -100,19 +82,13 @@ export default function TaskTable() {
             <th className="px-6 py-3 font-medium text-gray-500 text-left text-xs uppercase tracking-wider group">
               <div className="flex items-center space-x-1">
                 <span>Created</span>
-                <button
-                  onClick={toggleSorting}
-                  className="hover:bg-gray-200 active:bg-gray-200 p-1 rounded transition-colors"
-                >
-                  <ArrowUpDown className="w-4 h-4" />
-                </button>
               </div>
             </th>
             <th className="px-6 py-3 font-medium text-gray-500 text-left text-xs uppercase tracking-wider">Assignee</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {sortedTasks.map((task, index) => (
+          {currentTasks.map((task, index) => (
             <tr
               key={task.id}
               onClick={() => setSelectedTaskId(task.id)}

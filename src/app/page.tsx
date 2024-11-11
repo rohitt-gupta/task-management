@@ -1,27 +1,19 @@
-'use client';
-import TaskTable from '../components/TaskTable';
-import StatusTabs from '../components/StatusTabs';
-// import TaskModal from '../components/TaskModal';
-import useTaskStore from '../store/taskStore';
-import TaskModal from '@/components/TaskModal';
+import { fetchAllTasks, fetchCounts } from "@/services/api";
+import HomePage from "@/components/HomePage";
+import { Task, TaskStatus } from "@/types/task";
 
-function App() {
-  const { selectedTaskId } = useTaskStore();
-  console.log(selectedTaskId);
+export default async function Home() {
 
-  return (
-    <div className="bg-gray-100 min-h-screen">
-      <div className="mx-auto sm:px-6 lg:px-8 py-6 max-w-7xl">
-        <div className="px-4 sm:px-0 py-6">
-          <StatusTabs />
-          <div className="mt-4">
-            <TaskTable />
-          </div>
-          {selectedTaskId && <TaskModal />}
-        </div>
-      </div>
-    </div>
-  );
+  const counts = await fetchCounts();
+  console.log("counts", counts);
+  const getData = async (status: TaskStatus) => {
+    'use server';
+    const data = await fetchAllTasks();
+    console.log("data", status);
+    return {
+      tasks: data.tasks.filter((task: Task) => task.status === status),
+    };
+  };
+
+  return <HomePage initialData={await getData("open")} getData={getData} counts={counts} />;
 }
-
-export default App;
