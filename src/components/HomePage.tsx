@@ -56,7 +56,6 @@ const HomePage = ({ initialData, getData, counts }: { initialData: { tasks: Task
           <div className="flex justify-between items-center">
 
             <StatusTabs
-              tasks={tasks}
               currentStatus={currentStatus}
               setCurrentStatus={setCurrentStatus}
               counts={counts}

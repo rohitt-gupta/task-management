@@ -1,13 +1,7 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
-import {
-	Task,
-	TaskStatus,
-	PageDetails,
-	CommentCursor,
-	TaskPriority,
-} from "../types/task";
+import { Task, TaskStatus, CommentCursor, TaskPriority } from "../types/task";
 import { revalidatePath } from "next/dist/server/web/spec-extension/revalidate";
 
 const prisma = new PrismaClient();

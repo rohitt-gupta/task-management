@@ -29,11 +29,6 @@ export interface Task {
 	comments: TaskComment[];
 }
 
-export interface PageDetails {
-	pageSize: number;
-	offset: number;
-}
-
 export interface TasksResponse {
 	tasks: Task[];
 	pageDetails: {
@@ -54,12 +49,4 @@ export interface CommentsResponse {
 		pageSize: number;
 		hasNextMessage: boolean;
 	};
-}
-
-export interface NewTaskData {
-	name: string;
-	description?: string;
-	priority: TaskPriority;
-	assignee: string;
-	dueDate?: Date;
 }

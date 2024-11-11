@@ -1,10 +1,9 @@
 'use client';
 import React from 'react';
-import { Circle, ArrowUpCircle, CheckCircle2, CatIcon } from 'lucide-react';
+import { Circle, ArrowUpCircle, CheckCircle2 } from 'lucide-react';
 import type { Task, TaskStatus } from '../types/task';
 
 interface StatusTabsProps {
-  tasks: Task[];
   currentStatus: TaskStatus;
   setCurrentStatus: (status: TaskStatus) => void;
   counts: { open: number, in_progress: number, closed: number };
@@ -16,7 +15,7 @@ const tabs: { id: TaskStatus; name: string }[] = [
   { id: 'closed', name: 'Closed' },
 ];
 
-export default function StatusTabs({ tasks, currentStatus, setCurrentStatus, counts }: StatusTabsProps) {
+export default function StatusTabs({ currentStatus, setCurrentStatus, counts }: StatusTabsProps) {
   return (
     <div className="border-gray-200 border-b">
       <nav className="flex space-x-8 -mb-px" aria-label="Tabs">

@@ -1,8 +1,7 @@
 "use client"
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { X, Check, ChevronDown } from 'lucide-react'
 import { Task, TaskStatus } from '../types/task'
 
 import { Button } from "@/components/ui/button"
